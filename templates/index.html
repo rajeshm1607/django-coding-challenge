@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Reviews</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        form {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input, button, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .movies, .reviews {
+            margin-top: 20px;
+        }
+        .movie, .review {
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        .movie p, .review p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Movie Reviews</h1>
+        
+        <!-- Add Movie Form -->
+        <form id="movie-form">
+            <h2>Add Movie</h2>
+            <label for="title">Title:</label>
+            <input type="text" id="title" required>
+            <label for="runtime">Runtime (minutes):</label>
+            <input type="number" id="runtime" required>
+            <label for="release_date">Release Date:</label>
+            <input type="date" id="release_date" required>
+            <button type="submit">Add Movie</button>
+        </form>
+        
+        <!-- Add Review Form -->
+        <form id="review-form">
+            <h2>Add Review</h2>
+            <label for="movie-id">Movie ID:</label>
+            <input type="number" id="movie-id" required>
+            <label for="reviewer-name">Reviewer Name:</label>
+            <input type="text" id="reviewer-name" required>
+            <label for="rating">Rating:</label>
+            <input type="number" id="rating" min="1" max="5" required>
+            <button type="submit">Add Review</button>
+        </form>
+        
+        <!-- Filter Movies -->
+        <form id="filter-form">
+            <h2>Filter Movies</h2>
+            <label for="runtime-filter">Filter by Runtime:</label>
+            <select id="runtime-filter">
+                <option value="gt">Greater Than</option>
+                <option value="lt">Less Than</option>
+            </select>
+            <input type="number" id="runtime-value" required>
+            <button type="button" onclick="filterMovies()">Filter Movies</button>
+        </form>
+        
+        <!-- Get Average Rating -->
+        <form id="avg-rating-form">
+            <h2>Get Average Rating</h2>
+            <label for="avg-movie-id">Movie ID:</label>
+            <input type="number" id="avg-movie-id" required>
+            <button type="submit">Get Average Rating</button>
+        </form>
+        <div id="average-rating"></div>
+        
+        <div class="movies" id="movies"></div>
+    </div>
+
+    <script>
+        document.getElementById('movie-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const runtime = document.getElementById('runtime').value;
+            const release_date = document.getElementById('release_date').value;
+            const response = await fetch('http://localhost:8080/api/movies/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, runtime, release_date })
+            });
+            if (response.ok) {
+                alert('Movie added successfully');
+                document.getElementById('movie-form').reset();
+                loadMovies();
+            } else {
+                const errorData = await response.json();
+                console.error('Error adding movie:', errorData);
+                alert(`Error adding movie: ${JSON.stringify(errorData)}`);
+            }
+        });
+
+        document.getElementById('review-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const movie_id = document.getElementById('movie-id').value;
+            const name = document.getElementById('reviewer-name').value;
+            const rating = document.getElementById('rating').value;
+            const response = await fetch('http://localhost:8080/api/reviews/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ movie: movie_id, name, rating })
+            });
+            if (response.ok) {
+                alert('Review added successfully');
+                document.getElementById('review-form').reset();
+                loadMovies();
+            } else {
+                const errorData = await response.json();
+                console.error('Error adding review:', errorData);
+                alert(`Error adding review: ${JSON.stringify(errorData)}`);
+            }
+        });
+
+        document.getElementById('avg-rating-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const movie_id = document.getElementById('avg-movie-id').value;
+            const response = await fetch(`http://localhost:8080/api/movies/${movie_id}/`);
+            if (response.ok) {
+                const movie = await response.json();
+                document.getElementById('average-rating').innerHTML = `
+                    <div class="movie">
+                        <p><strong>Average Rating for Movie ID ${movie_id}:</strong> ${movie.avg_rating}</p>
+                    </div>
+                `;
+            } else {
+                const errorData = await response.json();
+                console.error('Error fetching average rating:', errorData);
+                alert(`Error fetching average rating: ${JSON.stringify(errorData)}`);
+            }
+        });
+
+        async function loadMovies() {
+            const response = await fetch('http://localhost:8080/api/movies/');
+            const movies = await response.json();
+            const moviesDiv = document.getElementById('movies');
+            moviesDiv.innerHTML = movies.map(movie => `
+                <div class="movie">
+                    <p><strong>Id:</strong> ${movie.id}</p>
+                    <p><strong>Title:</strong> ${movie.title}</p>
+                    <p><strong>Runtime:</strong> ${movie.runtime} minutes (${movie.runtime_formatted})</p>
+                    <p><strong>Release Date:</strong> ${movie.release_date}</p>
+                    <p><strong>Average Rating:</strong> ${movie.avg_rating}</p>
+                    <div class="reviews">
+                        <h3>Reviews:</h3>
+                        ${movie.reviews.map(review => `
+                            <div class="review">
+                                <p><strong>Reviewer:</strong> ${review.name}</p>
+                                <p><strong>Rating:</strong> ${review.rating}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function filterMovies() {
+            const runtimeFilter = document.getElementById('runtime-filter').value;
+            const runtimeValue = document.getElementById('runtime-value').value;
+            let url = `http://localhost:8080/api/movies/?runtime=${runtimeFilter}:${runtimeValue}`;
+            const response = await fetch(url);
+            const movies = await response.json();
+            const moviesDiv = document.getElementById('movies');
+            moviesDiv.innerHTML = movies.map(movie => `
+                <div class="movie">
+                    <p><strong>Id:</strong> ${movie.id}</p>
+                    <p><strong>Title:</strong> ${movie.title}</p>
+                    <p><strong>Runtime:</strong> ${movie.runtime} minutes (${movie.runtime_formatted})</p>
+                    <p><strong>Release Date:</strong> ${movie.release_date}</p>
+                    <p><strong>Average Rating:</strong> ${movie.avg_rating}</p>
+                    <div class="reviews">
+                        <h3>Reviews:</h3>
+                        ${movie.reviews.map(review => `
+                            <div class="review">
+                                <p><strong>Reviewer:</strong> ${review.name}</p>
+                                <p><strong>Rating:</strong> ${review.rating}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadMovies();
+    </script>
+</body>
+</html>
