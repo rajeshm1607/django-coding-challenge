@@ -10,7 +10,7 @@ This project is a simple Django application that uses Docker for containerizatio
 - Filter movies based on runtime.
 
 ## Working Demo
-
+Click [here](Moview_Demo.mp4) to watch the demo video.
 <video width="800" controls>
   <source src="Moview_Demo.mp4" type="video/mp4">
   Your browser does not support the video tag.
