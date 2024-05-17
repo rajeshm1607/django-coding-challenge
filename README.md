@@ -9,6 +9,13 @@ This project is a simple Django application that uses Docker for containerizatio
 - Calculate and display the average rating for each movie.
 - Filter movies based on runtime.
 
+## Working Demo
+
+<video width="800" controls>
+  <source src="demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## Requirements
 
 - Docker
@@ -21,7 +28,3 @@ This project is a simple Django application that uses Docker for containerizatio
    ```bash
    git clone <your-repository-url>
    cd <your-repository-directory>
-
-## Working Demo
-
-Click [here](docs/demo.mp4) to watch the demo video.
