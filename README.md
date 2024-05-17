@@ -21,3 +21,7 @@ This project is a simple Django application that uses Docker for containerizatio
    ```bash
    git clone <your-repository-url>
    cd <your-repository-directory>
+
+## Working Demo
+
+Click [here](docs/demo.mp4) to watch the demo video.
