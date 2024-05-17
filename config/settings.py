@@ -79,9 +79,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'django_db',
-        'USER': 'django_user',
-        'PASSWORD': 'django_pass',
+        'NAME': 'cytracom',
+        'USER': 'cytracom',
+        'PASSWORD': 'cytracom',
         'HOST': 'db',
         'PORT': '5432',
     }
